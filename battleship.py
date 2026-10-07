@@ -41,7 +41,7 @@ class BattleShip:
 
             self.attacks.append(cols[:])
 
-        # self.availableBoats = {4: 1, 3:2, 2: 3, 1: 4}
+        # self.availableBoats = {4: 2, 3:2, 2: 3, 1: 4}
         self.availableBoats = {3:2}
         self.hits = 0
         for k in self.availableBoats:
@@ -109,7 +109,7 @@ class BattleShip:
 
             for i in range(boatSize):
 
-                if 1 <= row < len(self.board) and 1 <= col < len(self.board[0]):
+                if 1 <= row < len(self.board) and 1 <= col < len(self.board[0]) and self.board[row][col] == "-":
                     currBoard[row][col] = self.figure
                     col += 1
                 else:
@@ -118,7 +118,7 @@ class BattleShip:
         else:
             for i in range(boatSize):
 
-                if 1 <= row < len(self.board) and 1 <= col < len(self.board[0]):
+                if 1 <= row < len(self.board) and 1 <= col < len(self.board[0]) and self.board[row][col] == "-":
                     currBoard[row][col] = self.figure
                     row += 1
                 else:
@@ -131,24 +131,31 @@ class BattleShip:
             if self.availableBoats[boatSize] == 0:
                 del self.availableBoats[boatSize]
         else:
-            print("Not in bounds\nPlease Retry")
+            print("Not in bounds or ships collide: Please Retry\n")
             return
 
         self.printBoard()
 
     
+    def _formatRow(self, row, width):
+        return "".join(str(cell).center(width) for cell in row)
+
     def printBoard(self):
 
+        width = max(len(str(self.boardSize - 1)), len(self.figure)) + 2
+
         print("\n\n")
-        for i in range(self.boardSize):
-            print(self.board[i])
+        for row in self.board:
+            print(self._formatRow(row, width))
         print("\n\n")
 
     def printAttacks(self):
 
+        width = max(len(str(self.boardSize - 1)), 1) + 2
+
         print("\n")
         print("\t\t   Current Board")
-        for i in range(self.boardSize):
-            print(self.attacks[i])
+        for row in self.attacks:
+            print(self._formatRow(row, width))
     
     

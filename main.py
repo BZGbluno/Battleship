@@ -1,15 +1,19 @@
+import questionary
 from battleship import BattleShip
 from mods import Bomb
 from collections import deque
+import random
+import subprocess
 
-SPECIAL_MOVES = 2
+SPECIAL_MOVES = 3
+SPECIAL_MOVES_STRICT = 7
 
 def confirmInteger(incomingString):
 
     if incomingString.isnumeric():
         return int(incomingString)
     
-    print(print("Select an integer please"))
+    print("Select an integer please")
     return None
 
 
@@ -42,14 +46,11 @@ def playerSetup():
         if boatSize is None:
             continue
 
-        horizontal = input("Horizontal?: Ans with (y or n)\t")
-        if horizontal == "y":
-            horizontal = True
-        elif horizontal == "n":
-            horizontal = False
-        else:
-            print("Please select either y or n")
-            continue
+        orientation = questionary.select(
+            "Select orientation:",
+            choices=["Horizontal", "Vertical"]
+        ).ask()
+        horizontal = orientation == "Horizontal"
 
         p1.placeShip((row,col), boatSize, horizontal=horizontal)
 
@@ -86,9 +87,13 @@ def play(p1, p2):
         if p1.canAttack(row, col):
             turnAmount = p1.getTurn()
 
-            if turnAmount % SPECIAL_MOVES == 0:
-                print("Choose bomb or corrode hit")
-                attackType = input("Select (b, c):\t")
+            # if turnAmount % SPECIAL_MOVES == 0:
+            if random.randint(1, SPECIAL_MOVES) == SPECIAL_MOVES or turnAmount % SPECIAL_MOVES_STRICT == 0:
+                attackChoice = questionary.select(
+                    "Choose special attack:",
+                    choices=["Bomb", "Corrode"]
+                ).ask()
+                attackType = "b" if attackChoice == "Bomb" else "c"
 
                 if attackType == "b":
                     print("BOOM")
@@ -119,13 +124,16 @@ def play(p1, p2):
 
                         visited.add((r,c))
 
+                        if not (1 <= r < p2.boardSize and 1 <= c < p2.boardSize):
+                            continue
 
+                        # if p2.isBoat(r,c) == True:
+                        if p1.canAttack(r,c):
+                            if regularAttack(p1, p2, r,c) == True:
+                                return True
+                        
+                        # expand poison
                         if p2.isBoat(r,c) == True:
-                            if p1.canAttack(r,c):
-                                if regularAttack(p1, p2, r,c) == True:
-                                    return True
-                            
-                            # expand poison
                             for m in moves:
                                 newRow = m[0] + r
                                 newCol = m[1] + c
@@ -173,6 +181,8 @@ while True:
         move += 1
         print("\n\n\n\n\n\n")
 
+
+    subprocess.run(["xdg-open", "/home/bruno/Desktop/battleship/Battleship/skepta.gif"])
     print("-------------------------")
     print("Game has ended, Thank you for playing")
 
